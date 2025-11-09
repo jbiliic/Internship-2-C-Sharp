@@ -19,6 +19,7 @@ namespace TripExpenseTracker
             
             var userDataBase = new Dictionary<int, string[]>();
             var tripDataBase = new Dictionary<int, string[]>();
+            var userTripRelationship = new Dictionary<int, List<int>>();
             userDataBase.Add(generateUserId(), new string[] { "Josip" , "Bilic" , "26-06-2003" });
             userDataBase.Add(generateUserId(), new string[] { "foo", "foocic", "26-06-2003" });
             userDataBase.Add(generateUserId(), new string[] { "batman", "superhero", "26-06-2003" });
@@ -32,11 +33,11 @@ namespace TripExpenseTracker
                 {
 
                     case '1':
-                        userScreen(userDataBase, tripDataBase);
+                        userScreen(userDataBase, tripDataBase, userTripRelationship);
                         break;
 
                     case '2':
-                        tripScreen(userDataBase, tripDataBase);
+                        tripScreen(userDataBase, tripDataBase, userTripRelationship);
                         break;
 
                     case '0':
@@ -52,7 +53,7 @@ namespace TripExpenseTracker
             }
         }
 
-        static void userScreen(Dictionary<int, string[]> userDataBase, Dictionary<int, string[]> tripDataBase)
+        static void userScreen(Dictionary<int, string[]> userDataBase, Dictionary<int, string[]> tripDataBase, Dictionary<int, List<int>> userTripRelationship)
         {
             while (true)
             {
@@ -92,7 +93,7 @@ namespace TripExpenseTracker
                 }
             }
         }
-        static void tripScreen(Dictionary<int, string[]> userDataBase, Dictionary<int, string[]> tripDataBase)
+        static void tripScreen(Dictionary<int, string[]> userDataBase, Dictionary<int, string[]> tripDataBase, Dictionary<int, List<int>> userTripRelationship)
         {
             while (true)
             {
@@ -103,6 +104,10 @@ namespace TripExpenseTracker
                 switch (Console.ReadKey().KeyChar)
                 {
                     case '1':
+                        int tripId = generateTripId();
+                        tripDataBase.Add(tripId, createNewTrip(userDataBase, tripDataBase, userTripRelationship, tripId));
+                        Console.WriteLine("Putovanje uspjesno dodano");
+                        Console.ReadKey();
                         break;
                     case '2':
                         break;
@@ -121,7 +126,17 @@ namespace TripExpenseTracker
                 }
             }
         }
-        
+        /* 
+         * 
+         * 
+         * 
+         * 
+         * 
+         * 
+         * user screen functions
+         * 
+         */
+
         static string[] createNewUser() {
 
             string firstName="", lastName="", dateOfBirth="";
@@ -293,7 +308,7 @@ namespace TripExpenseTracker
                         break;
                     case '2':
                         Console.Clear();
-                        var usersOlderThan20 = userDataBase.Where(user => DateTime.ParseExact(user.Value[2], "dd-MM-yyyy", null) < DateTime.Now.AddYears(-20));
+                        var usersOlderThan20 = userDataBase.Where(user => DateTime.ParseExact(user.Value[2], "dd-MM-yyyy", null) > DateTime.Now.AddYears(-20));
                         foreach (var user in usersOlderThan20)
                         {
                             Console.WriteLine($"{user.Key} - {user.Value[0]} - {user.Value[1]} - {user.Value[2]}");
@@ -312,6 +327,152 @@ namespace TripExpenseTracker
                 }
             }
         }
+        /* 
+         * 
+         * 
+         * trip screen functions
+         * 
+         */
+
+        static string[] createNewTrip(Dictionary<int, string[]> userDataBase, Dictionary<int, string[]> tripDataBase, Dictionary<int, List<int>> userTripRelationship,int tripId)
+        {
+            Console.Clear();
+            string dateOfTrip = "" , distance = "" , fuelUsage = "" , costPerL = "" ,costOfTrip = "",inputId = "";
+            float fuelUsageParsed, costPerLParsed;
+
+            while (true)
+            {
+                Console.Clear();
+                Console.Write("\nUnesite id korisnika koji putuje: ");
+                inputId = Console.ReadLine();
+                if (int.TryParse(inputId, out int userId))
+                {
+                    if (userDataBase.ContainsKey(userId)) {break; }
+                    else
+                    {
+                        Console.WriteLine("Korisnik s unesenim id-em ne postoji!!!");
+                        Console.ReadKey();
+                        continue;
+                    }
+
+                }
+                else
+                {
+                    Console.WriteLine("Unos nije valjan pokusajte ponovno");
+                    Console.ReadKey();
+                    continue;
+                }
+            }
+            while (true)
+            {
+                Console.Clear();
+                Console.Write("Unesite datum putovanja u formatu dd-mm-yyyy: ");
+                dateOfTrip = Console.ReadLine();
+                try
+                {
+                    DateTime dateOfTripParased = DateTime.ParseExact(dateOfTrip, "dd-MM-yyyy", null);
+                    if (dateOfTripParased > DateTime.Now || dateOfTripParased < DateTime.Now.AddYears(-100))
+                    {
+                        Console.Write("\nUneseni datum je u buducnosti ili je previse u proslosti!!! Pritisnite enter te pokusajte ponovno");
+                        Console.ReadKey();
+                        continue;
+                    }
+                    break;
+                }
+                catch (Exception)
+                {
+                    Console.Write("\nNeispravan format datuma!!! Pritisnite enter te pokusajte ponovno");
+                    Console.ReadKey();
+                }
+            }
+            while (true) {
+                Console.Clear();
+                Console.Write("Unesite kilometrazu: ");
+                distance = Console.ReadLine();
+                try
+                {
+                    float distanceParsed = float.Parse(distance);
+                    if (distanceParsed <= 0)
+                    {
+                        Console.Write("\nKilometraza mora biti veca od 0!!! Pritisnite enter te pokusajte ponovno");
+                        Console.ReadKey();
+                        continue;
+                    }
+                    break;
+                }
+                catch (Exception)
+                {
+                    Console.Clear();
+                    Console.Write("\nNeispravan format kilometraze!!! Pritisnite enter te pokusajte ponovno");
+                    Console.ReadKey();
+                    continue;
+                }
+            }
+            while (true)
+            {
+                Console.Clear();
+                Console.Write("Unesite koliko litara goriva ste potrosili: ");
+                fuelUsage = Console.ReadLine();
+                try
+                {
+                     fuelUsageParsed = float.Parse(fuelUsage);
+                    if (fuelUsageParsed <= 0)
+                    {
+                        Console.Write("\nBroj mora biti veca od 0!!! Pritisnite enter te pokusajte ponovno");
+                        Console.ReadKey();
+                        continue;
+                    }
+                    break;
+                }
+                catch (Exception)
+                {
+                    Console.Clear();
+                    Console.Write("\nNeispravan format!!! Pritisnite enter te pokusajte ponovno");
+                    Console.ReadKey();
+                    continue;
+                }
+            }
+            while (true)
+            {
+                Console.Clear();
+                Console.Write("Unesite cijenu litre goriva: ");
+                costPerL = Console.ReadLine();
+                try
+                {
+                    costPerLParsed = float.Parse(costPerL);
+                    if (costPerLParsed <= 0)
+                    {
+                        Console.Write("\nBroj mora biti veca od 0!!! Pritisnite enter te pokusajte ponovno");
+                        Console.ReadKey();
+                        continue;
+                    }
+                    break;
+                }
+                catch (Exception)
+                {
+                    Console.Clear();
+                    Console.Write("\nNeispravan format!!! Pritisnite enter te pokusajte ponovno");
+                    Console.ReadKey();
+                    continue;
+                }
+            }
+            costOfTrip = (fuelUsageParsed * costPerLParsed).ToString();
+            if (userTripRelationship.ContainsKey(int.Parse(inputId)))
+            {
+                userTripRelationship[int.Parse(inputId)].Add(tripId);
+            }
+            else 
+            {
+                userTripRelationship[int.Parse(inputId)] = new List<int> { tripId };
+            }
+
+
+            return new string[] {dateOfTrip, distance , fuelUsage, costPerL, costOfTrip};
+        }
+
+
+
+
         /* 
          * 
          * 
