@@ -22,6 +22,7 @@ namespace TripExpenseTracker
             userDataBase.Add(generateUserId(), new string[] { "Josip" , "Bilic" , "26-06-2003" });
             userDataBase.Add(generateUserId(), new string[] { "foo", "foocic", "26-06-2003" });
             userDataBase.Add(generateUserId(), new string[] { "batman", "superhero", "26-06-2003" });
+            userDataBase.Add(generateUserId(), new string[] { "ante", "antic", "26-06-2018" });
 
             while (true)
             {
@@ -77,7 +78,7 @@ namespace TripExpenseTracker
                         break;
 
                     case '4':
-
+                        printUsersScreen(userDataBase);
                         break;
 
                     case '0':
@@ -265,15 +266,49 @@ namespace TripExpenseTracker
                     {
                         Console.WriteLine("Korisnik s unesenim id-em ne postoji!!!");
                         Console.ReadKey();
-                        break;
+                        return;
                     }
-
                 }
                 else
                 {
                     Console.WriteLine("Unos nije valjan pokusajte ponovno");
                     Console.ReadKey();
                     continue;
+                }
+            }
+        }
+        static void printUsersScreen(Dictionary<int, string[]> userDataBase) {
+            while (true) {
+                Console.Clear();
+                Console.Write("1-Ispis po prezimenu sortirano\n2-Ispis svih starijih od 20g\n3-Ispis svih sa >2 putovanja\n0-Povratak\nUnos:");
+                switch (Console.ReadKey().KeyChar) { 
+                    case '1':
+                        Console.Clear();
+                        var sortedByLastName = userDataBase.OrderBy(user => user.Value[1]);
+                        foreach (var user in sortedByLastName)
+                        {
+                            Console.WriteLine($"{user.Key} - {user.Value[0]} - {user.Value[1]} - {user.Value[2]}");
+                        }
+                        Console.ReadKey();
+                        break;
+                    case '2':
+                        Console.Clear();
+                        var usersOlderThan20 = userDataBase.Where(user => DateTime.ParseExact(user.Value[2], "dd-MM-yyyy", null) < DateTime.Now.AddYears(-20));
+                        foreach (var user in usersOlderThan20)
+                        {
+                            Console.WriteLine($"{user.Key} - {user.Value[0]} - {user.Value[1]} - {user.Value[2]}");
+                        }
+                        Console.ReadKey();
+                        break;
+                    case '3':
+                        break;
+                    case '0':
+                        return;
+                    default:
+                        Console.Clear();
+                        Console.WriteLine("\nPritisnite enter zatim pokušajte ponovo.");
+                        Console.ReadKey();
+                        break;
                 }
             }
         }
