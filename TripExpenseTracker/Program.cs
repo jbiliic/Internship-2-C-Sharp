@@ -16,9 +16,12 @@ namespace TripExpenseTracker
         static int generateTripId() { return tripIdCounter++; }
         static void Main(string[] args)
         {
-            // 'database' creation
+            
             var userDataBase = new Dictionary<int, string[]>();
             var tripDataBase = new Dictionary<int, string[]>();
+            userDataBase.Add(generateUserId(), new string[] { "Josip" , "Bilic" , "26-06-2003" });
+            userDataBase.Add(generateUserId(), new string[] { "foo", "foocic", "26-06-2003" });
+            userDataBase.Add(generateUserId(), new string[] { "batman", "superhero", "26-06-2003" });
 
             while (true)
             {
@@ -61,14 +64,12 @@ namespace TripExpenseTracker
 
                     case '1':
                         userDataBase.Add(generateUserId(), createNewUser());
-                        foreach (var user in userDataBase) {
-                            Console.WriteLine($" {user.Key} - {user.Value[0]} - {user.Value[1]} - {user.Value[2]}");
-                        }
+                        Console.WriteLine("Korisnik stvoren!!!");
                         Console.ReadKey();
                         break;
 
                     case '2':
-
+                        deleteUser(userDataBase);
                         break;
 
                     case '3':
@@ -119,13 +120,11 @@ namespace TripExpenseTracker
                 }
             }
         }
-        // takes usern input and return an array with user information
+        
         static string[] createNewUser() {
 
             string firstName="", lastName="", dateOfBirth="";
             
-            
-            //get first name
             while (true) {
                 Console.Clear();
                 Console.Write("\nUnesite ime korisnika: ");
@@ -134,7 +133,7 @@ namespace TripExpenseTracker
                 { Console.Write("\nIme nesmije biti prazno, krace od 2 slova te duze od 20!!! Pritisnite enter te pokusajte ponovno"); Console.ReadKey(); continue; }
                 break;
             }
-            //get laste name
+            
             while (true)
             {
                 Console.Clear();
@@ -144,7 +143,7 @@ namespace TripExpenseTracker
                 { Console.Write("\nPrezime nesmije biti prazno, krace od 2 slova te duze od 20!!! Pritisnite enter te pokusajte ponovno");Console.ReadKey(); continue; }
                 break;
             }
-            //get date of birth
+            
             while (true)
             {
                 Console.Clear();
@@ -166,10 +165,86 @@ namespace TripExpenseTracker
                 {
                     Console.Write("\nNeispravan format datuma!!! Pritisnite enter te pokusajte ponovno");
                     Console.ReadKey();
-                }
-                
+                }       
             }
+        }
+        static void deleteUser(Dictionary<int, string[]> userDataBase) {
+            while (true) {
+                Console.Clear();
+                Console.Write("1-Brisanje po id \n2-Brisanje po imenu i prezimenu \n0-Povratak\nUnos: ");
+                switch (Console.ReadKey().KeyChar)
+                {
+                    case '1':
+                        
+                        while (true) {
+                            Console.Clear();
+                            Console.Write("\nUnesite id korisnika kojeg zelite izbrisati: ");
+                            string inputId = Console.ReadLine();
+                            if (int.TryParse(inputId, out int userId))
+                            {
+                                if (userDataBase.ContainsKey(userId))
+                                {
+                                    userDataBase.Remove(userId);
+                                    Console.WriteLine("Korisnik izbrisan uspjesno!!!");
+                                    Console.ReadKey();
+                                    return;
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Korisnik s unesenim id-em ne postoji!!!");
+                                    Console.ReadKey();
+                                    break;
+                                }
 
+                            }
+                            else {
+                                Console.WriteLine("Unos nije valjan pokusajte ponovno");
+                                Console.ReadKey();
+                                continue;
+                            }
+                        }
+                        break;
+                    case '2':
+                        string firstName = "", lastName = "";
+
+                        while (true)
+                        {
+                            Console.Clear();
+                            Console.Write("\nUnesite ime korisnika: ");
+                            firstName = Console.ReadLine();
+                            if (string.IsNullOrWhiteSpace(firstName) || firstName.Length < 2 || firstName.Length > 20 || ContainsSpecialCharacters(firstName))
+                            { Console.Write("\nIme nesmije biti prazno, krace od 2 slova te duze od 20!!! Pritisnite enter te pokusajte ponovno"); Console.ReadKey(); continue; }
+                            break;
+                        }
+                        while (true)
+                        {
+                            Console.Clear();
+                            Console.Write("\nUnesite prezime korisnika: ");
+                            lastName = Console.ReadLine();
+                            if (string.IsNullOrWhiteSpace(lastName) || lastName.Length < 2 || lastName.Length > 20 || ContainsSpecialCharacters(lastName))
+                            { Console.Write("\nPrezime nesmije biti prazno, krace od 2 slova te duze od 20!!! Pritisnite enter te pokusajte ponovno"); Console.ReadKey(); continue; }
+                            break;
+                        }
+                        foreach (var user in userDataBase.ToList()) 
+                        {
+                            if (firstName.ToUpper().Equals(user.Value[0].ToUpper()) && lastName.ToUpper().Equals(user.Value[1].ToUpper()))
+                            {
+                                userDataBase.Remove(user.Key);
+                                Console.WriteLine("\nKorisnik uspjesno izbrisan");
+                                Console.ReadKey();
+                                return;
+                            }
+                        }
+                        Console.WriteLine("\nNavedeni korisnik ne postoji");
+                        Console.ReadKey();
+                        break;
+                    case '0':
+                        return;
+                    default:
+                        Console.WriteLine("Krivi unos");
+                        break;
+                }
+            }
         }
         /* 
          * 
@@ -178,7 +253,7 @@ namespace TripExpenseTracker
          * 
          */
 
-        // checks if string contains special characters
+        
         static bool ContainsSpecialCharacters(string name)
         {
             foreach (char c in name)
