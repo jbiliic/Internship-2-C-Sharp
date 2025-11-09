@@ -1,7 +1,0 @@
-C:\Users\jopab\OneDrive\DUMP\domaci2\Internship-2-C-Sharp\TripExpenseTracker\bin\Debug\TripExpenseTracker.exe.config
-C:\Users\jopab\OneDrive\DUMP\domaci2\Internship-2-C-Sharp\TripExpenseTracker\bin\Debug\TripExpenseTracker.exe
-C:\Users\jopab\OneDrive\DUMP\domaci2\Internship-2-C-Sharp\TripExpenseTracker\bin\Debug\TripExpenseTracker.pdb
-C:\Users\jopab\OneDrive\DUMP\domaci2\Internship-2-C-Sharp\TripExpenseTracker\obj\Debug\TripExpenseTracker.csproj.AssemblyReference.cache
-C:\Users\jopab\OneDrive\DUMP\domaci2\Internship-2-C-Sharp\TripExpenseTracker\obj\Debug\TripExpenseTracker.csproj.CoreCompileInputs.cache
-C:\Users\jopab\OneDrive\DUMP\domaci2\Internship-2-C-Sharp\TripExpenseTracker\obj\Debug\TripExpenseTracker.exe
-C:\Users\jopab\OneDrive\DUMP\domaci2\Internship-2-C-Sharp\TripExpenseTracker\obj\Debug\TripExpenseTracker.pdb
