@@ -73,7 +73,7 @@ namespace TripExpenseTracker
                         break;
 
                     case '3':
-
+                        editUser(userDataBase);
                         break;
 
                     case '4':
@@ -246,6 +246,37 @@ namespace TripExpenseTracker
                 }
             }
         }
+        static void editUser(Dictionary<int, string[]> userDataBase) {
+            while (true)
+            {
+                Console.Clear();
+                Console.Write("\nUnesite id korisnika kojeg zelite urediti: ");
+                string inputId = Console.ReadLine();
+                if (int.TryParse(inputId, out int userId))
+                {
+                    if (userDataBase.ContainsKey(userId))
+                    {
+                        userDataBase[userId] = createNewUser();
+                        Console.WriteLine("Korisnik ureden uspjesno!!!");
+                        Console.ReadKey();
+                        return;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Korisnik s unesenim id-em ne postoji!!!");
+                        Console.ReadKey();
+                        break;
+                    }
+
+                }
+                else
+                {
+                    Console.WriteLine("Unos nije valjan pokusajte ponovno");
+                    Console.ReadKey();
+                    continue;
+                }
+            }
+        }
         /* 
          * 
          * 
@@ -253,7 +284,7 @@ namespace TripExpenseTracker
          * 
          */
 
-        
+
         static bool ContainsSpecialCharacters(string name)
         {
             foreach (char c in name)
