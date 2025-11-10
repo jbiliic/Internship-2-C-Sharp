@@ -110,6 +110,7 @@ namespace TripExpenseTracker
                         Console.ReadKey();
                         break;
                     case '2':
+                        deleteTripScreen(tripDataBase,userTripRelationship);
                         break;
                     case '3':
                         break;
@@ -251,7 +252,7 @@ namespace TripExpenseTracker
 
             return new string[] {dateOfTrip, distance , fuelUsage, costPerL, costOfTrip};
         }
-        static void deleteTripScreen(Dictionary<int, string[]> tripDataBase)
+        static void deleteTripScreen(Dictionary<int, string[]> tripDataBase, Dictionary<int, List<int>> userTripRelationship)
         {
             while (true) { 
                 Console.Clear();
@@ -259,10 +260,21 @@ namespace TripExpenseTracker
                 switch (Console.ReadKey().KeyChar)
                 {
                     case '1':
+                        var tripId = getAndValidateTripId(tripDataBase);
+                        tripDataBase.Remove(tripId);
+                        deleteTripUserRelationship(tripId, userTripRelationship);
+                        Console.WriteLine("Uspijesno izbrisano");
+                        Console.ReadKey();
                         break;
                     case '2':
+                        deleteTripsByCost(tripDataBase, userTripRelationship, 1);
+                        Console.WriteLine("Uspijesno izbrisano");
+                        Console.ReadKey();
                         break;
                     case '3':
+                        deleteTripsByCost(tripDataBase, userTripRelationship, -1);
+                        Console.WriteLine("Uspijesno izbrisano");
+                        Console.ReadKey();
                         break;
                     case '0':
                         return;
@@ -335,7 +347,6 @@ namespace TripExpenseTracker
                         continue;
                     }
                     return toReturn;
-
                 }
                 catch (Exception)
                 {
@@ -385,7 +396,6 @@ namespace TripExpenseTracker
                         Console.ReadKey();
                         continue;
                     }
-
                 }
                 else
                 {
@@ -394,6 +404,45 @@ namespace TripExpenseTracker
                     continue;
                 }
             }
+        }
+        static int getAndValidateTripId(Dictionary<int, string[]> tripDataBase){
+            while (true)
+            {
+                Console.Clear();
+                Console.Write("\nUnesite id putovanja: ");
+                var inputId = Console.ReadLine();
+                if (int.TryParse(inputId, out int tripId))
+                {
+                    if (tripDataBase.ContainsKey(tripId)) { return tripId; }
+                    else
+                    {
+                        Console.WriteLine("Putovanje s unesenim id-em ne postoji!!!");
+                        Console.ReadKey();
+                        continue;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Unos nije valjan pokusajte ponovno");
+                    Console.ReadKey();
+                    continue;
+                }
+            }
+        }
+        static void deleteTripsByCost(Dictionary<int, string[]> tripDataBase, Dictionary<int, List<int>> userTripRelationship,int multiplyer) {
+            var inputCostStr = getAndValidateInputInt("iznos");
+            var inputCost = float.Parse(inputCostStr);
+            foreach (var trip in tripDataBase.ToList())
+            {
+                var tripCost = float.Parse(trip.Value[4]);
+                if (multiplyer*inputCost < multiplyer*tripCost)
+                {
+                    tripDataBase.Remove(trip.Key);
+                    deleteTripUserRelationship(trip.Key, userTripRelationship);
+                }
+            }
+            Console.WriteLine("Uspijesno izbrisano");
+            Console.ReadKey();
         }
     }
 }
