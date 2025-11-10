@@ -139,50 +139,10 @@ namespace TripExpenseTracker
 
         static string[] createNewUser() {
 
-            string firstName="", lastName="", dateOfBirth="";
-            
-            while (true) {
-                Console.Clear();
-                Console.Write("\nUnesite ime korisnika: ");
-                firstName = Console.ReadLine();
-                if (string.IsNullOrWhiteSpace(firstName) || firstName.Length <2 || firstName.Length >20 || ContainsSpecialCharacters(firstName)) 
-                { Console.Write("\nIme nesmije biti prazno, krace od 2 slova te duze od 20!!! Pritisnite enter te pokusajte ponovno"); Console.ReadKey(); continue; }
-                break;
-            }
-            
-            while (true)
-            {
-                Console.Clear();
-                Console.Write("\nUnesite prezime korisnika: ");
-                lastName = Console.ReadLine();
-                if (string.IsNullOrWhiteSpace(lastName) || lastName.Length < 2 || lastName.Length > 20 || ContainsSpecialCharacters(lastName))
-                { Console.Write("\nPrezime nesmije biti prazno, krace od 2 slova te duze od 20!!! Pritisnite enter te pokusajte ponovno");Console.ReadKey(); continue; }
-                break;
-            }
-            
-            while (true)
-            {
-                Console.Clear();
-                Console.Write("Unesite datum rodenja u formatu dd-mm-yyyy: ");
-                dateOfBirth = Console.ReadLine();
-                try
-                {
-                    DateTime dateOfBirthParased = DateTime.ParseExact(dateOfBirth, "dd-MM-yyyy", null);
-                    if (dateOfBirthParased > DateTime.Now || dateOfBirthParased < DateTime.Now.AddYears(-100))
-                    {
-                        Console.Write("\nUneseni datum je u buducnosti ili je previse u proslosti!!! Pritisnite enter te pokusajte ponovno");
-                        Console.ReadKey();
-                        continue;
-                    }
-                    return new string[] { firstName, lastName, dateOfBirth };
-
-                }
-                catch (Exception)
-                {
-                    Console.Write("\nNeispravan format datuma!!! Pritisnite enter te pokusajte ponovno");
-                    Console.ReadKey();
-                }       
-            }
+            var firstName = getAndValidateInputStr("Ime");
+            var lastName = getAndValidateInputStr("Prezime");
+            var dateOfBirth = getAndValidateInputDate("Datum rođenja");
+            return new string[] { firstName, lastName, dateOfBirth };
         }
         static void deleteUser(Dictionary<int, string[]> userDataBase) {
             while (true) {
@@ -192,55 +152,12 @@ namespace TripExpenseTracker
                 {
                     case '1':
                         
-                        while (true) {
-                            Console.Clear();
-                            Console.Write("\nUnesite id korisnika kojeg zelite izbrisati: ");
-                            string inputId = Console.ReadLine();
-                            if (int.TryParse(inputId, out int userId))
-                            {
-                                if (userDataBase.ContainsKey(userId))
-                                {
-                                    userDataBase.Remove(userId);
-                                    Console.WriteLine("Korisnik izbrisan uspjesno!!!");
-                                    Console.ReadKey();
-                                    return;
-                                }
-                                else
-                                {
-                                    Console.WriteLine("Korisnik s unesenim id-em ne postoji!!!");
-                                    Console.ReadKey();
-                                    break;
-                                }
-
-                            }
-                            else {
-                                Console.WriteLine("Unos nije valjan pokusajte ponovno");
-                                Console.ReadKey();
-                                continue;
-                            }
-                        }
+                        var inputId = getAndValidateUserId(userDataBase);
+                        userDataBase.Remove(inputId);
                         break;
                     case '2':
-                        string firstName = "", lastName = "";
-
-                        while (true)
-                        {
-                            Console.Clear();
-                            Console.Write("\nUnesite ime korisnika: ");
-                            firstName = Console.ReadLine();
-                            if (string.IsNullOrWhiteSpace(firstName) || firstName.Length < 2 || firstName.Length > 20 || ContainsSpecialCharacters(firstName))
-                            { Console.Write("\nIme nesmije biti prazno, krace od 2 slova te duze od 20!!! Pritisnite enter te pokusajte ponovno"); Console.ReadKey(); continue; }
-                            break;
-                        }
-                        while (true)
-                        {
-                            Console.Clear();
-                            Console.Write("\nUnesite prezime korisnika: ");
-                            lastName = Console.ReadLine();
-                            if (string.IsNullOrWhiteSpace(lastName) || lastName.Length < 2 || lastName.Length > 20 || ContainsSpecialCharacters(lastName))
-                            { Console.Write("\nPrezime nesmije biti prazno, krace od 2 slova te duze od 20!!! Pritisnite enter te pokusajte ponovno"); Console.ReadKey(); continue; }
-                            break;
-                        }
+                        var firstName = getAndValidateInputStr("Ime");
+                        var lastName = getAndValidateInputStr("Prezime");
                         foreach (var user in userDataBase.ToList()) 
                         {
                             if (firstName.ToUpper().Equals(user.Value[0].ToUpper()) && lastName.ToUpper().Equals(user.Value[1].ToUpper()))
@@ -263,34 +180,8 @@ namespace TripExpenseTracker
             }
         }
         static void editUser(Dictionary<int, string[]> userDataBase) {
-            while (true)
-            {
-                Console.Clear();
-                Console.Write("\nUnesite id korisnika kojeg zelite urediti: ");
-                string inputId = Console.ReadLine();
-                if (int.TryParse(inputId, out int userId))
-                {
-                    if (userDataBase.ContainsKey(userId))
-                    {
-                        userDataBase[userId] = createNewUser();
-                        Console.WriteLine("Korisnik ureden uspjesno!!!");
-                        Console.ReadKey();
-                        return;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Korisnik s unesenim id-em ne postoji!!!");
-                        Console.ReadKey();
-                        return;
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Unos nije valjan pokusajte ponovno");
-                    Console.ReadKey();
-                    continue;
-                }
-            }
+            var inputId = getAndValidateUserId(userDataBase);
+            userDataBase[inputId] = createNewUser();
         }
         static void printUsersScreen(Dictionary<int, string[]> userDataBase) {
             while (true) {
@@ -337,126 +228,17 @@ namespace TripExpenseTracker
         static string[] createNewTrip(Dictionary<int, string[]> userDataBase, Dictionary<int, string[]> tripDataBase, Dictionary<int, List<int>> userTripRelationship,int tripId)
         {
             Console.Clear();
-            string dateOfTrip = "" , distance = "" , fuelUsage = "" , costPerL = "" ,costOfTrip = "",inputId = "";
-            float fuelUsageParsed, costPerLParsed;
+            
+            var inputId = getAndValidateUserId(userDataBase).ToString();
+            var dateOfTrip = getAndValidateInputDate("datum putovanja");
+            var distance = getAndValidateInputInt("prijeđenu udaljenost u kilometrima");
+            var fuelUsage = getAndValidateInputInt("potrošnju goriva u litrama");
+            var costPerL = getAndValidateInputInt("cijenu goriva po litri");
 
-            while (true)
-            {
-                Console.Clear();
-                Console.Write("\nUnesite id korisnika koji putuje: ");
-                inputId = Console.ReadLine();
-                if (int.TryParse(inputId, out int userId))
-                {
-                    if (userDataBase.ContainsKey(userId)) {break; }
-                    else
-                    {
-                        Console.WriteLine("Korisnik s unesenim id-em ne postoji!!!");
-                        Console.ReadKey();
-                        continue;
-                    }
+            var fuelUsageParsed = float.Parse(fuelUsage);
+            var costPerLParsed = float.Parse(costPerL);
+            var costOfTrip = (fuelUsageParsed * costPerLParsed).ToString();
 
-                }
-                else
-                {
-                    Console.WriteLine("Unos nije valjan pokusajte ponovno");
-                    Console.ReadKey();
-                    continue;
-                }
-            }
-            while (true)
-            {
-                Console.Clear();
-                Console.Write("Unesite datum putovanja u formatu dd-mm-yyyy: ");
-                dateOfTrip = Console.ReadLine();
-                try
-                {
-                    DateTime dateOfTripParased = DateTime.ParseExact(dateOfTrip, "dd-MM-yyyy", null);
-                    if (dateOfTripParased > DateTime.Now || dateOfTripParased < DateTime.Now.AddYears(-100))
-                    {
-                        Console.Write("\nUneseni datum je u buducnosti ili je previse u proslosti!!! Pritisnite enter te pokusajte ponovno");
-                        Console.ReadKey();
-                        continue;
-                    }
-                    break;
-                }
-                catch (Exception)
-                {
-                    Console.Write("\nNeispravan format datuma!!! Pritisnite enter te pokusajte ponovno");
-                    Console.ReadKey();
-                }
-            }
-            while (true) {
-                Console.Clear();
-                Console.Write("Unesite kilometrazu: ");
-                distance = Console.ReadLine();
-                try
-                {
-                    float distanceParsed = float.Parse(distance);
-                    if (distanceParsed <= 0)
-                    {
-                        Console.Write("\nKilometraza mora biti veca od 0!!! Pritisnite enter te pokusajte ponovno");
-                        Console.ReadKey();
-                        continue;
-                    }
-                    break;
-                }
-                catch (Exception)
-                {
-                    Console.Clear();
-                    Console.Write("\nNeispravan format kilometraze!!! Pritisnite enter te pokusajte ponovno");
-                    Console.ReadKey();
-                    continue;
-                }
-            }
-            while (true)
-            {
-                Console.Clear();
-                Console.Write("Unesite koliko litara goriva ste potrosili: ");
-                fuelUsage = Console.ReadLine();
-                try
-                {
-                     fuelUsageParsed = float.Parse(fuelUsage);
-                    if (fuelUsageParsed <= 0)
-                    {
-                        Console.Write("\nBroj mora biti veca od 0!!! Pritisnite enter te pokusajte ponovno");
-                        Console.ReadKey();
-                        continue;
-                    }
-                    break;
-                }
-                catch (Exception)
-                {
-                    Console.Clear();
-                    Console.Write("\nNeispravan format!!! Pritisnite enter te pokusajte ponovno");
-                    Console.ReadKey();
-                    continue;
-                }
-            }
-            while (true)
-            {
-                Console.Clear();
-                Console.Write("Unesite cijenu litre goriva: ");
-                costPerL = Console.ReadLine();
-                try
-                {
-                    costPerLParsed = float.Parse(costPerL);
-                    if (costPerLParsed <= 0)
-                    {
-                        Console.Write("\nBroj mora biti veca od 0!!! Pritisnite enter te pokusajte ponovno");
-                        Console.ReadKey();
-                        continue;
-                    }
-                    break;
-                }
-                catch (Exception)
-                {
-                    Console.Clear();
-                    Console.Write("\nNeispravan format!!! Pritisnite enter te pokusajte ponovno");
-                    Console.ReadKey();
-                    continue;
-                }
-            }
-            costOfTrip = (fuelUsageParsed * costPerLParsed).ToString();
             if (userTripRelationship.ContainsKey(int.Parse(inputId)))
             {
                 userTripRelationship[int.Parse(inputId)].Add(tripId);
@@ -469,6 +251,29 @@ namespace TripExpenseTracker
 
             return new string[] {dateOfTrip, distance , fuelUsage, costPerL, costOfTrip};
         }
+        static void deleteTripScreen(Dictionary<int, string[]> tripDataBase)
+        {
+            while (true) { 
+                Console.Clear();
+                Console.Write("\n1-Brisanje putovanja po ID\n2-Brisanje putavanja koja su skuplja od unesenog iznosa\n3-Brisanje putavanja koja su jeftinija od unesenog iznosa\n0-Povratak\nUnos: ");
+                switch (Console.ReadKey().KeyChar)
+                {
+                    case '1':
+                        break;
+                    case '2':
+                        break;
+                    case '3':
+                        break;
+                    case '0':
+                        return;
+                    default:
+                        Console.WriteLine("Krivi unos");
+                        break;
+                }
+            }
+        }
+        
+        
 
 
 
@@ -491,6 +296,104 @@ namespace TripExpenseTracker
                 }
             }
             return false;
+        }
+        static void deleteTripUserRelationship(int tripId, Dictionary<int, List<int>> userTripRelationship)
+        {
+            foreach (var userTrips in userTripRelationship)
+            {
+                if (userTrips.Value.Contains(tripId))
+                {
+                    userTrips.Value.Remove(tripId);
+                    return;
+                }
+            }
+        }
+        static string getAndValidateInputStr(string inputType) {
+            while (true)
+            {
+                Console.Clear();
+                Console.Write($"\nUnesite {inputType}: ");
+                var toReturn = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(toReturn) || toReturn.Length < 2 || toReturn.Length > 20 || ContainsSpecialCharacters(toReturn))
+                { Console.Write($"\n{toReturn} nesmije biti prazno, krace od 2 slova te duze od 20!!! Pritisnite enter te pokusajte ponovno"); Console.ReadKey(); continue; }
+                return toReturn;
+            }
+        }
+        static string getAndValidateInputDate(string inputType) {
+            while (true)
+            {
+                Console.Clear();
+                Console.Write($"Unesite {inputType} u formatu dd-mm-yyyy: ");
+                var toReturn = Console.ReadLine();
+                try
+                {
+                    DateTime toReturnParased = DateTime.ParseExact(toReturn, "dd-MM-yyyy", null);
+                    if (toReturnParased > DateTime.Now || toReturnParased < DateTime.Now.AddYears(-100))
+                    {
+                        Console.Write("\nUneseni datum je u buducnosti ili je previse u proslosti!!! Pritisnite enter te pokusajte ponovno");
+                        Console.ReadKey();
+                        continue;
+                    }
+                    return toReturn;
+
+                }
+                catch (Exception)
+                {
+                    Console.Write("\nNeispravan format datuma!!! Pritisnite enter te pokusajte ponovno");
+                    Console.ReadKey();
+                }
+            }
+        }
+        static string getAndValidateInputInt(string inputType) {
+            while (true)
+            {
+                Console.Clear();
+                Console.Write($"Unesite {inputType}: ");
+                var toReturn = Console.ReadLine();
+                try
+                {
+                    var toReturnParsed = float.Parse(toReturn);
+                    if (toReturnParsed <= 0)
+                    {
+                        Console.Write("\nBroj mora biti veca od 0!!! Pritisnite enter te pokusajte ponovno");
+                        Console.ReadKey();
+                        continue;
+                    }
+                    return toReturn;
+                }
+                catch (Exception)
+                {
+                    Console.Clear();
+                    Console.Write("\nNeispravan format!!! Pritisnite enter te pokusajte ponovno");
+                    Console.ReadKey();
+                    continue;
+                }
+            }
+        }
+        static int getAndValidateUserId(Dictionary<int, string[]> userDataBase) {
+            while (true)
+            {
+                Console.Clear();
+                Console.Write("\nUnesite id korisnika koji putuje: ");
+                var inputId = Console.ReadLine();
+                if (int.TryParse(inputId, out int userId))
+                {
+                    if (userDataBase.ContainsKey(userId)) { return userId; }
+                    else
+                    {
+                        Console.WriteLine("Korisnik s unesenim id-em ne postoji!!!");
+                        Console.ReadKey();
+                        continue;
+                    }
+
+                }
+                else
+                {
+                    Console.WriteLine("Unos nije valjan pokusajte ponovno");
+                    Console.ReadKey();
+                    continue;
+                }
+            }
         }
     }
 }
