@@ -24,6 +24,35 @@ namespace TripExpenseTracker
             userDataBase.Add(generateUserId(), new string[] { "foo", "foocic", "26-06-2003" });
             userDataBase.Add(generateUserId(), new string[] { "batman", "superhero", "26-06-2003" });
             userDataBase.Add(generateUserId(), new string[] { "ante", "antic", "26-06-2018" });
+            // Putovanje 1 - Josip (id 0)
+            int tripId1 = generateTripId();
+            tripDataBase.Add(tripId1, new string[] { "15-05-2024", "350", "28", "1.65", "46.20" });
+            userTripRelationship[0] = new List<int> { tripId1 };
+
+            // Putovanje 2 - Josip (id 0)
+            int tripId2 = generateTripId();
+            tripDataBase.Add(tripId2, new string[] { "22-06-2024", "180", "15", "1.70", "25.50" });
+            userTripRelationship[0].Add(tripId2);
+
+            // Putovanje 3 - foo (id 1)
+            int tripId3 = generateTripId();
+            tripDataBase.Add(tripId3, new string[] { "10-07-2024", "520", "42", "1.60", "67.20" });
+            userTripRelationship[1] = new List<int> { tripId3 };
+
+            // Putovanje 4 - batman (id 2)
+            int tripId4 = generateTripId();
+            tripDataBase.Add(tripId4, new string[] { "03-04-2024", "1200", "95", "1.75", "166.25" });
+            userTripRelationship[2] = new List<int> { tripId4 };
+
+            // Putovanje 5 - ante (id 3)
+            int tripId5 = generateTripId();
+            tripDataBase.Add(tripId5, new string[] { "18-08-2024", "75", "6", "1.68", "10.08" });
+            userTripRelationship[3] = new List<int> { tripId5 };
+
+            // Putovanje 6 - Josip (id 0) - još jedno putovanje
+            int tripId6 = generateTripId();
+            tripDataBase.Add(tripId6, new string[] { "30-09-2024", "420", "35", "1.62", "56.70" });
+            userTripRelationship[0].Add(tripId6);
 
             while (true)
             {
@@ -117,6 +146,7 @@ namespace TripExpenseTracker
                         tripDataBase[inputTripId] = createNewTrip(userDataBase, tripDataBase, userTripRelationship, inputTripId);
                         break;
                     case '4':
+                        printTripsScreen(tripDataBase);
                         break;
                     case '5':
                         break;
@@ -266,17 +296,14 @@ namespace TripExpenseTracker
                         var tripId = getAndValidateTripId(tripDataBase);
                         tripDataBase.Remove(tripId);
                         deleteTripUserRelationship(tripId, userTripRelationship);
-                        Console.WriteLine("Uspijesno izbrisano");
                         Console.ReadKey();
                         break;
                     case '2':
                         deleteTripsByCost(tripDataBase, userTripRelationship, 1);
-                        Console.WriteLine("Uspijesno izbrisano");
                         Console.ReadKey();
                         break;
                     case '3':
                         deleteTripsByCost(tripDataBase, userTripRelationship, -1);
-                        Console.WriteLine("Uspijesno izbrisano");
                         Console.ReadKey();
                         break;
                     case '0':
@@ -286,6 +313,104 @@ namespace TripExpenseTracker
                         break;
                 }
             }
+        }
+        static void printTripsScreen(Dictionary<int, string[]> tripDataBase) {
+            while (true) {
+                Console.SetCursorPosition(0, 0);
+                Console.Clear();
+                Console.Write("1-Sva putovanja\n2-Sva putovanja sortirana po trošku uzlazno\r\n3-Sva  putovanja sortirana po trošku silazno\r\n");
+                Console.Write("4-Sva  putovanja sortirana po kilometraži uzlazno\r\n5-Sva  putovanja sortirana po kilometraži silazno\r\n6-Sva  putovanja sortirana po datumu uzlazno\r\n");
+                Console.Write("7-Sva  putovanja sortirana po datumu silazno\r\n0-Povratak\nUnos:");
+
+                switch (Console.ReadKey().KeyChar)
+                {
+                    case '1':
+                        Console.Clear();
+                        foreach (var trip in tripDataBase)
+                        {
+                            Console.Write($"Putovanje{trip.Key}#\nDatum:{trip.Value[0]}\nKilometri:{trip.Value[1]} km \nGorivo:{trip.Value[2]} l\nCijena/L:{trip.Value[3]} eur/l\nCijena:{trip.Value[4]} eur\n\n");
+                        }
+                        Console.ReadKey();
+                        Console.Clear();
+                        for (int i = 0; i < 50; i++) Console.WriteLine();
+                        break;
+                    case '2':
+                        Console.Clear();
+                        var sortedByCostAsc = tripDataBase.OrderBy(trip => float.Parse(trip.Value[4]));
+                        foreach (var trip in sortedByCostAsc)
+                        {
+                            Console.Write($"Putovanje{trip.Key}#\nDatum:{trip.Value[0]}\nKilometri:{trip.Value[1]} km \nGorivo:{trip.Value[2]} l\nCijena/L:{trip.Value[3]} eur/l\nCijena:{trip.Value[4]} eur\n\n");
+                        }
+                        Console.ReadKey();
+                        Console.Clear();
+                        for (int i = 0; i < 50; i++) Console.WriteLine();
+                        break;
+                    case '3':
+                        Console.Clear();
+                        var sortedByCostDesc = tripDataBase.OrderByDescending(trip => float.Parse(trip.Value[4]));
+                        foreach (var trip in sortedByCostDesc)
+                        {
+                            Console.Write($"Putovanje{trip.Key}#\nDatum:{trip.Value[0]}\nKilometri:{trip.Value[1]} km \nGorivo:{trip.Value[2]} l\nCijena/L:{trip.Value[3]} eur/l\nCijena:{trip.Value[4]} eur\n\n");
+                        }
+                        Console.ReadKey();
+                        Console.Clear();
+                        for (int i = 0; i < 50; i++) Console.WriteLine();
+                        break;
+                    case '4':
+                        Console.Clear();
+                        var sortedByDistanceAsc = tripDataBase.OrderBy(trip => float.Parse(trip.Value[1]));
+                        foreach (var trip in sortedByDistanceAsc)
+                        {
+                            Console.Write($"Putovanje{trip.Key}#\nDatum:{trip.Value[0]}\nKilometri:{trip.Value[1]} km \nGorivo:{trip.Value[2]} l\nCijena/L:{trip.Value[3]} eur/l\nCijena:{trip.Value[4]} eur\n\n");
+                        }
+                        Console.ReadKey();
+                        Console.Clear();
+                        for (int i = 0; i < 50; i++) Console.WriteLine();
+                        break;
+                    case '5':
+                        Console.Clear();
+                        var sortedByDistanceDesc = tripDataBase.OrderByDescending(trip => float.Parse(trip.Value[1]));
+                        foreach (var trip in sortedByDistanceDesc)
+                        {
+                            Console.Write($"Putovanje{trip.Key}#\nDatum:{trip.Value[0]}\nKilometri:{trip.Value[1]} km \nGorivo:{trip.Value[2]} l\nCijena/L:{trip.Value[3]} eur/l\nCijena:{trip.Value[4]} eur\n\n");
+                        }
+                        Console.ReadKey();
+                        Console.Clear();
+                        for (int i = 0; i < 50; i++) Console.WriteLine();
+                        break;
+                    case '6':
+                        Console.Clear();
+                        var sortedByDateAsc = tripDataBase.OrderBy(trip => DateTime.ParseExact(trip.Value[0], "dd-MM-yyyy", null));
+                        foreach (var trip in sortedByDateAsc)
+                        {
+                            Console.Write($"Putovanje{trip.Key}#\nDatum:{trip.Value[0]}\nKilometri:{trip.Value[1]} km \nGorivo:{trip.Value[2]} l\nCijena/L:{trip.Value[3]} eur/l\nCijena:{trip.Value[4]} eur\n\n");
+                        }
+                        Console.ReadKey();
+                        Console.Clear();
+                        for (int i = 0; i < 50; i++) Console.WriteLine();
+                        break;
+                    case '7':
+                        Console.Clear();
+                        var sortedByDateDesc = tripDataBase.OrderByDescending(trip => DateTime.ParseExact(trip.Value[0], "dd-MM-yyyy", null));
+                        foreach (var trip in sortedByDateDesc)
+                        {
+                            Console.Write($"Putovanje{trip.Key}#\nDatum:{trip.Value[0]}\nKilometri:{trip.Value[1]} km \nGorivo:{trip.Value[2]} l\nCijena/L:{trip.Value[3]} eur/l\nCijena:{trip.Value[4]} eur\n\n");
+                        }
+                        Console.ReadKey();
+                        Console.Clear();
+                        for (int i = 0; i < 50; i++) Console.WriteLine();
+                        break;
+                    case '0':
+                        return;
+                    default:
+                        Console.Clear();
+                        Console.WriteLine("\nPogresan unos. Pritisnite enter zatim pokušajte ponovo.");
+                        Console.ReadLine();
+                        for (int i = 0; i < 50; i++) Console.WriteLine();
+                        break;
+                }
+            }
+            
         }
         
         
@@ -445,7 +570,6 @@ namespace TripExpenseTracker
                 }
             }
             Console.WriteLine("Uspijesno izbrisano");
-            Console.ReadKey();
         }
     }
 }
