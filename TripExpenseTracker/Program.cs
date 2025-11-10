@@ -113,6 +113,8 @@ namespace TripExpenseTracker
                         deleteTripScreen(tripDataBase,userTripRelationship);
                         break;
                     case '3':
+                        var inputTripId = getAndValidateTripId(tripDataBase);
+                        tripDataBase[inputTripId] = createNewTrip(userDataBase, tripDataBase, userTripRelationship, inputTripId);
                         break;
                     case '4':
                         break;
@@ -242,6 +244,7 @@ namespace TripExpenseTracker
 
             if (userTripRelationship.ContainsKey(int.Parse(inputId)))
             {
+                if(!userTripRelationship[int.Parse(inputId)].Contains(tripId))
                 userTripRelationship[int.Parse(inputId)].Add(tripId);
             }
             else 
