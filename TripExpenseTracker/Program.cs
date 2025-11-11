@@ -24,6 +24,7 @@ namespace TripExpenseTracker
             userDataBase.Add(generateUserId(), new string[] { "foo", "foocic", "26-06-2008" });
             userDataBase.Add(generateUserId(), new string[] { "batman", "superhero", "26-06-2000" });
             userDataBase.Add(generateUserId(), new string[] { "ante", "antic", "26-06-2018" });
+            userDataBase.Add(generateUserId(), new string[] { "aaaa", "antaaaaaic", "26-06-2018" });
             // Putovanje 1 - Josip (id 0)
             int tripId1 = generateTripId();
             tripDataBase.Add(tripId1, new string[] { "15-05-2024", "350", "28", "1.65", "46.20" });
@@ -122,7 +123,18 @@ namespace TripExpenseTracker
                         break;
 
                     case '4':
-                        printUsersScreen(userDataBase);
+                        
+
+                        if (userDataBase.Count != 0)
+                        {
+                            printUsersScreen(userDataBase);
+                        }
+                        else
+                        {
+                            Console.Clear();
+                            Console.WriteLine("Nema korisnika za ispisivanje");
+                            Console.ReadKey();
+                        }
                         break;
 
                     case '0':
@@ -161,7 +173,7 @@ namespace TripExpenseTracker
                         
                         break;
                     case '2':
-                        deleteTripScreen(tripDataBase,userTripRelationship);
+                        
                         if (tripDataBase.Count != 0)
                         {
                             deleteTripScreen(tripDataBase, userTripRelationship);
@@ -189,9 +201,22 @@ namespace TripExpenseTracker
                         
                         break;
                     case '4':
-                        printTripsScreen(tripDataBase);
+                        
+
+                        if (tripDataBase.Count != 0)
+                        {
+                            printTripsScreen(tripDataBase);
+                        }
+                        else
+                        {
+                            Console.Clear();
+                            Console.WriteLine("Nema putovanja za ispisati  ");
+                            Console.ReadKey();
+                            break;
+                        }
                         break;
                     case '5':
+                        analasysScreen(userDataBase, tripDataBase, userTripRelationship);
                         break;
                     case '0':
                         return;
@@ -507,24 +532,44 @@ namespace TripExpenseTracker
                 switch (Console.ReadKey().KeyChar)
                 {
                     case '1':
-                        Console.Clear();
-                        var userId1 = getAndValidateUserId(userDataBase);
-                        var sum1 = 0.0f;
-                        if (userTripRelationship[userId1] == null || userTripRelationship[userId1].Count == 0) {
-                            Console.WriteLine("Uneseni korisnik jos nije bio na putu");
-                            Console.ReadKey();
-                            break;
-                        }
-                        foreach (var tripId in userTripRelationship[userId1]) { 
-                            sum1 += float.Parse(tripDataBase[tripId][2]);
-                        }
-                        Console.WriteLine($"\nUkupna potrošnja goriva za korisnika {userId1} iznosi: {sum1} L");
+                        var userId = getAndValidateUserId(userDataBase);
+                        var fuelSum = calculateVariableUsage(userDataBase, tripDataBase, userTripRelationship, 2, userId);
+                        Console.WriteLine($"\nUkupna potrošnja goriva za korisnika iznosi: {fuelSum} L");
+                        Console.ReadKey();
                         break;
                     case '2':
+                        var userId2 = getAndValidateUserId(userDataBase);
+                        Console.Clear();
+                        var fuelCost = calculateVariableUsage(userDataBase, tripDataBase, userTripRelationship, 4, userId2);
+                        Console.WriteLine($"\nUkupni troškovi goriva za korisnika iznosi: {fuelCost} eur");
+                        Console.ReadKey();
                         break;
                     case '3':
+                        Console.Clear();
+                        var userId3 = getAndValidateUserId(userDataBase);
+                        var totalFuel = calculateVariableUsage(userDataBase, tripDataBase, userTripRelationship, 2, userId3);
+                        var totalDistance = calculateVariableUsage(userDataBase, tripDataBase, userTripRelationship, 1, userId3);
+
+                        if (totalDistance != 0)
+                        {
+                            var averageConsumption = (totalFuel / totalDistance) * 100;
+                            Console.WriteLine($"\nProsječna potrošnja goriva za korisnika iznosi: {averageConsumption} L/100km");
+                        }
+                        else
+                        {
+                            Console.WriteLine("\nKorisnik nije imao prijeđenih kilometara pa se prosječna potrošnja ne može izračunati.");
+                        }
+                        Console.ReadKey();
                         break;
                     case '4':
+                        Console.Clear();
+                        var maxFuelUsageTripId = getMaxVaribaleTripId(userDataBase, tripDataBase, userTripRelationship, 2);
+                        if (maxFuelUsageTripId == -1) 
+                            break; 
+                        
+                        Console.WriteLine($"\nPutovanje s najvecom potrosnjom goriva iznosi");
+                        Console.WriteLine($"Putovanje{maxFuelUsageTripId}#\nDatum:{tripDataBase[maxFuelUsageTripId][0]}\nKilometri:{tripDataBase[maxFuelUsageTripId][1]} km \nGorivo:{tripDataBase[maxFuelUsageTripId][2]} l\nCijena/L:{tripDataBase[maxFuelUsageTripId][3]} eur/l\nCijena:{tripDataBase[maxFuelUsageTripId][4]} eur\n\n");
+                        Console.ReadKey();
                         break;
                     case '5':
                         break;
@@ -536,6 +581,45 @@ namespace TripExpenseTracker
                         break;
                 }
             }
+        }
+        static float calculateVariableUsage(Dictionary<int, string[]> userDataBase, Dictionary<int, string[]> tripDataBase, Dictionary<int, List<int>> userTripRelationship,int variableId,int userId) {
+            Console.Clear();
+            
+            var sum = 0.0f;
+            if (!userTripRelationship.ContainsKey(userId) || userTripRelationship[userId] == null || userTripRelationship[userId].Count == 0)
+            {
+                Console.WriteLine("Uneseni korisnik jos nije bio na putu");
+                
+                return 0;
+            }
+            foreach (var tripId in userTripRelationship[userId])
+            {
+                sum += float.Parse(tripDataBase[tripId][variableId]);
+            }
+            return sum;
+        }
+        static int getMaxVaribaleTripId(Dictionary<int, string[]> userDataBase, Dictionary<int, string[]> tripDataBase, Dictionary<int, List<int>> userTripRelationship, int variableId) {
+            var userId = getAndValidateUserId(userDataBase);
+            var allVariables = new List<float>();
+            if (!userTripRelationship.ContainsKey(userId) || userTripRelationship[userId] == null || userTripRelationship[userId].Count == 0)
+            {
+                Console.WriteLine("Uneseni korisnik jos nije bio na putu");
+                Console.ReadKey();
+                return -1;
+            }
+            int maxTripId = -1;
+            float maxValue = float.MinValue;
+
+            foreach (var tripId in userTripRelationship[userId])
+            {
+                float currentValue = float.Parse(tripDataBase[tripId][variableId]);
+                if (currentValue > maxValue)
+                {
+                    maxValue = currentValue;
+                    maxTripId = tripId;
+                }
+            }
+            return maxTripId;
         }
         static void deleteTripsByCost(Dictionary<int, string[]> tripDataBase, Dictionary<int, List<int>> userTripRelationship, int multiplyer)
         {
