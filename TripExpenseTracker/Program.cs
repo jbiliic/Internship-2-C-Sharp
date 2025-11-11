@@ -20,11 +20,13 @@ namespace TripExpenseTracker
             var userDataBase = new Dictionary<int, string[]>();
             var tripDataBase = new Dictionary<int, string[]>();
             var userTripRelationship = new Dictionary<int, List<int>>();
+            
             userDataBase.Add(generateUserId(), new string[] { "Josip" , "Bilic" , "26-06-2003" });
             userDataBase.Add(generateUserId(), new string[] { "foo", "foocic", "26-06-2008" });
             userDataBase.Add(generateUserId(), new string[] { "batman", "superhero", "26-06-2000" });
             userDataBase.Add(generateUserId(), new string[] { "ante", "antic", "26-06-2018" });
             userDataBase.Add(generateUserId(), new string[] { "aaaa", "antaaaaaic", "26-06-2018" });
+            
             // Putovanje 1 - Josip (id 0)
             int tripId1 = generateTripId();
             tripDataBase.Add(tripId1, new string[] { "15-05-2024", "350", "28", "1.65", "46.20" });
@@ -54,7 +56,7 @@ namespace TripExpenseTracker
             int tripId6 = generateTripId();
             tripDataBase.Add(tripId6, new string[] { "30-09-2024", "420", "35", "1.62", "56.70" });
             userTripRelationship[0].Add(tripId6);
-
+            
             while (true)
             {
                 Console.Clear();
@@ -117,7 +119,7 @@ namespace TripExpenseTracker
                         else
                         {
                             Console.Clear();
-                            Console.WriteLine("Nema korisnika za brisanje");
+                            Console.WriteLine("Nema korisnika za uredivanje");
                             Console.ReadKey();
                         }
                         break;
@@ -127,7 +129,7 @@ namespace TripExpenseTracker
 
                         if (userDataBase.Count != 0)
                         {
-                            printUsersScreen(userDataBase);
+                            printUsersScreen(userDataBase, userTripRelationship);
                         }
                         else
                         {
@@ -190,6 +192,7 @@ namespace TripExpenseTracker
                         if (tripDataBase.Count != 0) {
                             var inputTripId = getAndValidateTripId(tripDataBase);
                             var newTripData = createNewTrip(userDataBase, tripDataBase, userTripRelationship, inputTripId);
+                            tripDataBase[inputTripId] = newTripData;
                         }
                         else
                         {
@@ -264,11 +267,12 @@ namespace TripExpenseTracker
                                 case "da":
                                 case "DA":
                                     userDataBase.Remove(inputId);
-                                    foreach(var tripId in userTripRelationship[inputId])
-                                    {
-                                        tripDataBase.Remove(tripId);
-                                        userTripRelationship.Remove(inputId);
-                                    }
+                                    if(userTripRelationship.ContainsKey(inputId))
+                                        foreach(var tripId in userTripRelationship[inputId])
+                                        {
+                                            tripDataBase.Remove(tripId);
+                                            userTripRelationship.Remove(inputId);
+                                        }
                                     Console.WriteLine("Korisnik uspijesno izbrisan");
                                     Console.ReadKey();
                                     return;
@@ -300,11 +304,12 @@ namespace TripExpenseTracker
                                         case "da":
                                         case "DA":
                                             userDataBase.Remove(user.Key);
-                                            foreach (var tripId in userTripRelationship[user.Key])
-                                            {
+                                            if (userTripRelationship.ContainsKey(user.Key))
+                                                foreach (var tripId in userTripRelationship[user.Key])
+                                                {
                                                 tripDataBase.Remove(tripId);
                                                 userTripRelationship.Remove(user.Key);
-                                            }
+                                                }
                                             Console.WriteLine("Korisnik uspijesno izbrisan");
                                             Console.ReadKey();
                                             return;
@@ -357,7 +362,7 @@ namespace TripExpenseTracker
                 }
             }
         }
-        static void printUsersScreen(Dictionary<int, string[]> userDataBase) {
+        static void printUsersScreen(Dictionary<int, string[]> userDataBase, Dictionary<int, List<int>> userTripRelationship) {
             while (true) {
                 Console.Clear();
                 Console.Write("1-Ispis po prezimenu sortirano\n2-Ispis svih starijih od 20g\n3-Ispis svih sa >2 putovanja\n0-Povratak\nUnos:");
@@ -373,7 +378,7 @@ namespace TripExpenseTracker
                         break;
                     case '2':
                         Console.Clear();
-                        var usersOlderThan20 = userDataBase.Where(user => DateTime.ParseExact(user.Value[2], "dd-MM-yyyy", null) > DateTime.Now.AddYears(-20));
+                        var usersOlderThan20 = userDataBase.Where(user => DateTime.ParseExact(user.Value[2], "dd-MM-yyyy", null) < DateTime.Now.AddYears(-20));
                         foreach (var user in usersOlderThan20)
                         {
                             Console.WriteLine($"{user.Key} - {user.Value[0]} - {user.Value[1]} - {user.Value[2]}");
@@ -381,6 +386,15 @@ namespace TripExpenseTracker
                         Console.ReadKey();
                         break;
                     case '3':
+                        Console.Clear();
+                        foreach (var user in userDataBase)
+                        {
+                            if (userTripRelationship.ContainsKey(user.Key) && userTripRelationship[user.Key].Count > 2)
+                            {
+                                Console.WriteLine($"{user.Key} - {user.Value[0]} - {user.Value[1]} - {user.Value[2]}");
+                            }
+                        }
+                        Console.ReadKey();
                         break;
                     case '0':
                         return;
@@ -572,6 +586,33 @@ namespace TripExpenseTracker
                         Console.ReadKey();
                         break;
                     case '5':
+                        var inputId = getAndValidateUserId(userDataBase);
+                        Console.Clear();
+                        
+                        if (userTripRelationship.ContainsKey(inputId) && userTripRelationship[inputId].Count() != 0)
+                        {
+                            var inputDateLowerBound = getAndValidateInputDate("datum od kojeg zelite pretragu");
+                            var inputDateUpperBound = getAndValidateInputDate("datum do kojeg zelite pretragu");
+
+                            if (DateTime.ParseExact(inputDateLowerBound, "dd-MM-yyyy", null) > DateTime.ParseExact(inputDateUpperBound, "dd-MM-yyyy", null))
+                            {
+                                Console.WriteLine("Donji datum ne moze biti veci od gornjeg datuma");
+                                Console.ReadKey();
+                                break;
+                            }
+                            foreach (var tripId in userTripRelationship[inputId])
+                            {
+                                var tripDate = DateTime.ParseExact(tripDataBase[tripId][0], "dd-MM-yyyy", null);
+                                if (tripDate >= DateTime.ParseExact(inputDateLowerBound, "dd-MM-yyyy", null) && tripDate <= DateTime.ParseExact(inputDateUpperBound, "dd-MM-yyyy", null))
+                                {
+                                    Console.Write($"Putovanje{tripId}#\nDatum:{tripDataBase[tripId][0]}\nKilometri:{tripDataBase[tripId][1]} km \nGorivo:{tripDataBase[tripId][2]} l\nCijena/L:{tripDataBase[tripId][3]} eur/l\nCijena:{tripDataBase[tripId][4]} eur\n\n");
+                                }
+                            }
+                        }
+                        else {
+                            Console.WriteLine("Korisnik nema putovanja");
+                        }
+                        Console.ReadKey();
                         break;
                     case '0':
                         return;
