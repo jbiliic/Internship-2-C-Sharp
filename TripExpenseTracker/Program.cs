@@ -26,7 +26,7 @@ namespace TripExpenseTracker
             userDataBase.Add(generateUserId(), new string[] { "batman", "superhero", "26-06-2000" });
             userDataBase.Add(generateUserId(), new string[] { "ante", "antic", "26-06-2018" });
             userDataBase.Add(generateUserId(), new string[] { "aaaa", "antaaaaaic", "26-06-2018" });
-
+            
             // Putovanje 1 - Josip (id 0)
             int tripId1 = generateTripId();
             tripDataBase.Add(tripId1, new string[] { "15-05-2024", "350", "28", "1.65", "46.20" });
@@ -56,6 +56,7 @@ namespace TripExpenseTracker
             int tripId6 = generateTripId();
             tripDataBase.Add(tripId6, new string[] { "30-09-2024", "420", "35", "1.62", "56.70" });
             userTripRelationship[0].Add(tripId6);
+            
 
             while (true)
             {
@@ -279,18 +280,20 @@ namespace TripExpenseTracker
                                         }
                                     Console.WriteLine("Korisnik uspijesno izbrisan");
                                     Console.ReadKey();
-                                    return;
+                                    break;
                                 case "Ne":
                                 case "ne":
                                 case "NE":
                                     Console.WriteLine("Radnja odbacena");
                                     Console.ReadKey();
-                                    return;
+                                    break;
                                 default:
                                     Console.WriteLine("Neispravan unos pokusajte ponovno"); Console.ReadKey(); break;
                             }
+                            break;
                         }
                         break;
+                        
                     case '2':
                         var firstName = getAndValidateInputStr("Ime");
                         var lastName = getAndValidateInputStr("Prezime");
@@ -336,7 +339,8 @@ namespace TripExpenseTracker
                     case '0':
                         return;
                     default:
-                        Console.WriteLine("Krivi unos");
+                        Console.WriteLine("\nKrivi unos , pokusajte ponovno");
+                        Console.ReadKey();
                         break;
                 }
             }
@@ -752,7 +756,7 @@ namespace TripExpenseTracker
                 Console.Write($"\nUnesite {inputType}: ");
                 var toReturn = Console.ReadLine();
                 if (string.IsNullOrWhiteSpace(toReturn) || toReturn.Length < 2 || toReturn.Length > 20 || ContainsSpecialCharacters(toReturn))
-                { Console.Write($"\n{toReturn} nesmije biti prazno, krace od 2 slova te duze od 20!!! Pritisnite enter te pokusajte ponovno"); Console.ReadKey(); continue; }
+                { Console.Write($"\n{inputType} nesmije biti prazno, krace od 2 slova te duze od 20 i nesmije sadrzavati posebne znakove!!! Pritisnite enter te pokusajte ponovno"); Console.ReadKey(); continue; }
                 return toReturn;
             }
         }
